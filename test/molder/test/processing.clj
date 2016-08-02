@@ -3,137 +3,40 @@
         [molder.processing]
         [molder.node-defs])
   (:require
-    [clojure.java.io :as io]))
-
-; test nodes:
-(def test-nodes1
- {:csv-input5293 {
-    :type "csv-input",
-    :id "csv-input5293"
-    :name "Adresses CSV"
-    :inputs nil
-    :outputs [ :identity9101 ]
-    :fields
-      { :filename "test/molder/test/data/smallset.csv"
-        :header true
-        :separator \;
-    }}
-
-  :identity9101 {
-    :type "identity"
-    :id "identity9101"
-    :name "No mods"
-    :inputs [ :csv-input5293 ]
-    :outputs [ :csv-output1892 ]
-    :fields {}}
-
-  :csv-output1892 {
-    :type "csv-output"
-    :id "csv-output1892"
-    :name "Modified addresses"
-    :inputs [ :identity9101 ]
-    :outputs nil
-    :fields {
-        :filename "test/molder/test/data/smallset-out.csv"
-        :header true
-        :separator \;
-    }}})
-
-
-; test nodes:
-(def test-nodes2
- {:csv-input5293 {
-    :type "csv-input",
-    :id "csv-input5293"
-    :name "Adresses CSV"
-    :inputs nil
-    :outputs [ :identity9101 ]
-    :fields
-      { :filename "test/molder/test/data/smallset.csv"
-        :header true
-        :separator \;
-    }}
-  :identity9101 {
-    :type "identity"
-    :id "identity9101"
-    :name "No mods"
-    :inputs [ :csv-input5293 ]
-    :outputs [ :identity222 ]
-    :fields {}}
-  :identity222 {
-    :type "identity"
-    :id "identity222"
-    :name "No mods"
-    :inputs [ :identity9101 ]
-    :outputs [ :csv-output1892 ]
-    :fields {}}
-  :csv-output1892 {
-    :type "csv-output"
-    :id "csv-output1892"
-    :name "Modified addresses"
-    :inputs [ :identity222 ]
-    :outputs nil
-    :fields {
-        :filename "test/molder/test/data/smallset-out.csv"
-        :header true
-        :separator \;
-    }}
-
-
-  :csv-input1 {
-    :type "csv-input",
-    :id "csv-input1"
-    :name "my CSV"
-    :inputs nil
-    :outputs [ :csv-output1 ]
-    :fields
-      { :filename "test/molder/test/data/smallset2.csv"
-        :header true
-        :separator \;
-      }}
-  :csv-output1 {
-    :type "csv-output"
-    :id "csv-output1"
-    :name "Modified addresses"
-    :inputs [ :csv-input1 ]
-    :outputs nil
-    :fields {
-        :filename "test/molder/test/data/smallset2-out.csv"
-        :header true
-        :separator \;
-        }}})
+    [clojure.java.io :as io]
+    [molder.test.data.molds :as test-molds]))
 
 (deftest external-output-node?-tests
-  (is (= false (external-output-node? (:csv-input5293 test-nodes1)))
+  (is (= false (external-output-node? (:csv-input5293 test-molds/test-nodes1)))
       "Check if input node evaluates to external output node")
-  (is (= false (external-output-node? (:identity9101 test-nodes1)))
+  (is (= false (external-output-node? (:identity9101 test-molds/test-nodes1)))
       "Check if standard node evaluates to external output node")
-  (is (= true (external-output-node? (:csv-output1892 test-nodes1)))
+  (is (= true (external-output-node? (:csv-output1892 test-molds/test-nodes1)))
       "Check if input node evaluates to external output node"))
 
 (deftest external-input-node?-tests
-  (is (= true (external-input-node? (:csv-input5293 test-nodes1)))
+  (is (= true (external-input-node? (:csv-input5293 test-molds/test-nodes1)))
       "Check if input node evaluates to external input node")
-  (is (= false (external-input-node? (:identity9101 test-nodes1)))
+  (is (= false (external-input-node? (:identity9101 test-molds/test-nodes1)))
       "Check if standard node evaluates to external input node")
-  (is (= false (external-input-node? (:csv-output1892 test-nodes1)))
+  (is (= false (external-input-node? (:csv-output1892 test-molds/test-nodes1)))
       "Check if input node evaluates to external input node"))
 
 (deftest filter-external-output-nodes-tests
-  (is (= (list (:csv-output1892 test-nodes1))
-         (filter-external-output-nodes test-nodes1))
+  (is (= (list (:csv-output1892 test-molds/test-nodes1))
+         (filter-external-output-nodes test-molds/test-nodes1))
       "Simple list with just one output")
-  (is (= (list (:csv-output1892 test-nodes2) (:csv-output1 test-nodes2))
-         (filter-external-output-nodes test-nodes2))
+  (is (= (list (:csv-output1892 test-molds/test-nodes2) (:csv-output1 test-molds/test-nodes2))
+         (filter-external-output-nodes test-molds/test-nodes2))
       "List with two outputs"))
 
 (deftest get-node-from-id-test
-  (is (= (:csv-output1892 test-nodes1)
-         (get-node-from-id "csv-output1892" test-nodes1))))
+  (is (= (:csv-output1892 test-molds/test-nodes1)
+         (get-node-from-id "csv-output1892" test-molds/test-nodes1))))
 
 (deftest get-input-nodes-test
-  (is (= (list (:identity9101 test-nodes1))
-         (get-input-nodes (:csv-output1892 test-nodes1) test-nodes1))))
+  (is (= (list (:identity9101 test-molds/test-nodes1))
+         (get-input-nodes (:csv-output1892 test-molds/test-nodes1) test-molds/test-nodes1))))
 
 (def test-input-csv-expected1
     '({:Name "Kasper" :Age "31" :Country "Switzerland"}
@@ -148,13 +51,13 @@
 
 (def state (atom { :data {} :errors {} :warnings {}}))
 (deftest process-from-node-tests
-  (let [output (process-from-node (:csv-input5293 test-nodes1) test-nodes1 state)]
+  (let [output (process-from-node (:csv-input5293 test-molds/test-nodes1) test-molds/test-nodes1 state)]
     (is (= test-input-csv-expected1 output)
         "Process a single input node"))
-  (let [output (process-from-node (:identity9101 test-nodes1) test-nodes1 state)]
+  (let [output (process-from-node (:identity9101 test-molds/test-nodes1) test-molds/test-nodes1 state)]
     (is (= test-input-csv-expected1 output)
         "Process two nodes"))
-  (let [output (process-from-node (:csv-output1892 test-nodes1) test-nodes1 state)]
+  (let [output (process-from-node (:csv-output1892 test-molds/test-nodes1) test-molds/test-nodes1 state)]
     (is (= nil output)
         "Process three nodes, ending in output. Shouldn't return anything")
     ; check that the file is written as expected
@@ -190,7 +93,7 @@
 (deftest process-mold-tests
   ; This mold has two outputs - both to .csv files
   ; first check that the state has been properly set
-  (let [state (process-mold test-nodes2)]
+  (let [state (process-mold test-molds/test-nodes2)]
     (is (= expected-state state)
         "Check that the state (ie. data flowing between nodes) has been saved"))
 

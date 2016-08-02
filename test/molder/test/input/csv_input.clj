@@ -18,19 +18,19 @@
 ;Test input-csv function
 (deftest test-input-csv-implementation
     ;read full file with headers and semi-colon separation
-    (is (= (csv-input/csv-input-impl "test/molder/test/input/data/testdata1.csv" \; true) test-input-csv-expected1))
+    (is (= (csv-input/csv-input-impl "test/molder/test/data/smallset.csv" \; true) test-input-csv-expected1))
     ;read only 2 entries from file with headers and semi-colon separation
-    (is (= (csv-input/csv-input-impl "test/molder/test/input/data/testdata1.csv" \; true 2) (take 2 test-input-csv-expected1)))
+    (is (= (csv-input/csv-input-impl "test/molder/test/data/smallset.csv" \; true 2) (take 2 test-input-csv-expected1)))
     ;read more entries from file than exists
-    (is (= (csv-input/csv-input-impl "test/molder/test/input/data/testdata1.csv" \; true 200) test-input-csv-expected1))
+    (is (= (csv-input/csv-input-impl "test/molder/test/data/smallset.csv" \; true 200) test-input-csv-expected1))
     ;read full file with no headers and comma separation and some empty fields
-    (is (= (csv-input/csv-input-impl "test/molder/test/input/data/testdata2.csv" \, false) test-input-csv-expected2)))
+    (is (= (csv-input/csv-input-impl "test/molder/test/input/data/testdata-noheader.csv" \, false) test-input-csv-expected2)))
 
 (def nodedef1
     { :type :csv-input,
       :id "csv-in14"
       :fields
-      { :filename "test/molder/test/input/data/testdata1.csv"
+      { :filename "test/molder/test/data/smallset.csv"
         :header true
         :separator \; },
       :name "Adresses CSV"})
@@ -39,7 +39,7 @@
     { :type "csv-input",
       :id "csv-in18"
       :fields
-      { :filename "test/molder/test/input/data/testdata2.csv"
+      { :filename "test/molder/test/input/data/testdata-noheader.csv"
         :header false
         :separator \, },
       :name "Adresses CSV"})

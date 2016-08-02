@@ -1,8 +1,6 @@
 (ns molder.processing
   (:use [molder.node-defs]))
 
-(defmacro is-lazy? [x] `(is (instance? clojure.lang.LazySeq ~x)))
-
 ; Returns true if the node has only inputs (ie. the node outputs to something like a file)
 (defn external-output-node? [node]
     (= 0 (:out-points (node-metadata (:type node)))))

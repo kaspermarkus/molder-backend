@@ -65,28 +65,26 @@ Does a full run of the pipes
 
 Returns: Status code, result
 
-
 ##### Try running the mold, report status
 URL: /try <nodes> <edges>
 
 Tries running the pipe and returns a information about the data that is run through the mold.
 
 Returns:
-{ 
-    nodes: {
-        :csv-in14: {
-            // any error message related to this node
-        }, 
-        ....
-    },
-    edges: {
-        :csv-in14: {
-            csv15: {
-                // either the table that flows from csv-in14 to csv15
-                // AND/OR any error message relating to this edge
-            },
-            ...
-        },
-        ...
-    }
-}
+  { :data
+    { :csv-input1
+        { :csv-output1 [...table...] }
+      :identity222
+        { :csv-output1892 [...table...] }
+      :identity9101
+        { :identity222 [...table...] }
+      :csv-input5293
+        { :identity9101 [...table...] }}
+    :errors [{
+      :severity :error
+      :node <node-id>
+      :type :invalid-mold
+      :description "..."
+      :details "..."
+    }],
+    :warnings {}

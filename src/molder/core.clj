@@ -1,59 +1,7 @@
 (ns molder.core
-  (:require [molder.processing :as processing]))
+  (:require [molder.processing :as processing])
+  (:use [molder.node-defs]))
 
-    ; (println "filtered nodes: " filtered-nodes)
-    ; (doall (map (fn [x]
-    ; ; (process-node (:csv-output1892 nodes) nodes)
-    ; (println "Count: " (count filtered-nodes))))
-; tag ydernode:
-;   map (inputs -> input)
-;
-
-
-; (defn resolve-node [ node inputs ]
-;   (let [resolved-inputs (map
-;                           (fn [input] (resolve-node))
-;                           inputs))
-
-
-; (defn runner [ out-nodes node-list limit ]
-;     ; for each output node
-;     (let [n] )
-;     ; execute function with it's resolved inputs as arguments
-
-;     )
-; (def test-nodes
-;  {:csv-input5293 {
-;     :type "csv-input",
-;     :id "csv-input5293"
-;     :name "Adresses CSV"
-;     :inputs nil
-;     :outputs [ :identity9101 ]
-;     :fields
-;       { :filename "test/molder/test/data/smallset.csv"
-;         :header true
-;         :separator \;
-;     }}
-
-;   :identity9101 {
-;     :type "identity"
-;     :id "identity9101"
-;     :name "No mods"
-;     :inputs [ :csv-input5293 ]
-;     :outputs [ :csv-output1892 ]
-;     :fields {}}
-
-;   :csv-output1892 {
-;     :type "csv-output"
-;     :id "csv-output1892"
-;     :name "Modified addresses"
-;     :inputs [ :identity9101 ]
-;     :outputs nil
-;     :fields {
-;         :filename "test/molder/test/data/smallset-out.csv"
-;         :header true
-;         :separator \;
-;     }}})
 ; (def  ^:dynamic *result_work* (ref '()))
 
 ; (defn ignore-node? [node]

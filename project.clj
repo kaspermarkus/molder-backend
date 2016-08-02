@@ -2,7 +2,8 @@
   :description "FIXME: write description"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/data.csv "0.1.0"]
-                 [org.clojure/tools.trace "0.7.9"]])
+                 [org.clojure/tools.trace "0.7.9"]
+                 [slingshot "0.12.2"]]) ; exception handling
 
 ; TODO:
 ; Add license info, github references, etc
