@@ -28,3 +28,14 @@
             "We're getting the correct error message")
         (swap! thrown not)))
     (is (= @thrown true) "An error message should be thrown")))
+
+(deftest node-metadata-test
+  (let [thrown (atom false)]
+    (try+
+      (node-metadata bogus-node)
+      (catch [:type :invalid-mold] {:keys [severity description]}
+        (is (= severity :error) "Error level correct")
+        (is (= description "Retrieved a node-type that does not have any metadata for it.")
+            "We're getting the correct error message")
+        (swap! thrown not)))
+    (is (= @thrown true) "An error message should be thrown")))
