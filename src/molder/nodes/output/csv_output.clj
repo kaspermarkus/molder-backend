@@ -1,6 +1,10 @@
+; TODO validation function for invalid separator and filename parameters
+; TODO Error handling file output impossible
+
 (ns molder.nodes.output.csv-output)
 (require '[clojure.data.csv :as csv]
-         '[clojure.java.io :as io])
+         '[clojure.java.io :as io]
+         '[molder.utils :as utils])
 
 (defn csv-output-impl
     "Writes to .csv file (comma separated values)
@@ -10,9 +14,9 @@
     header: true if the first line of the .csv file should be a headers (boolean)"
     [ filename separator header table ]
     (let
-        [ data-body (map (fn [row] (vec (vals row))) table)
+        [ data-body (:data table)
           out-data (if header
-                      (cons (vec (map name (keys (first table)))) data-body)
+                      (cons (utils/headers-to-list (:columns table)) data-body)
                       data-body) ]
         (with-open [out-file (io/writer filename)] (csv/write-csv out-file out-data :separator separator))))
 
@@ -20,15 +24,17 @@
   (let [fields (:fields node)
         filename (:filename fields)
         separator (:separator fields)
-        header (:header fields) ]
+        header (:header fields)
+        ; TODO proper test, warnings, etc for separator and header being correct types
+        separator-char (if (char? separator) separator (first separator)) ]
     ; (println "ORIG TABLES: " tables)))
-    (csv-output-impl filename separator header table)))
+    (csv-output-impl filename separator-char header table)))
 
 (def metadata
   { :in-points 1
     :out-points 0
     :type-name "CSV Output"
-    :type :csv-output
+    :type "csv-output"
     :description "Writes .csv (comma separated values) files. Supports other separators than commas"
     :fields
         { :filename
@@ -46,6 +52,6 @@
           :separator
             { :type "char"
               :required true
-              :default \;
+              :default ","
               :name "Separator",
               :tooltip "The character separating the entries in the CSV file" }}})

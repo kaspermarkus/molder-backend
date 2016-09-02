@@ -1,74 +1,70 @@
 (ns molder.core
   (:require [molder.processing :as processing])
-  (:use [molder.node-defs]))
+  (:use [molder.node-defs])
+  (:gen-class)
+  (:use compojure.core)
+  (:use ring.util.response)
+  (:import org.eclipse.jetty.server.ssl.SslSocketConnector)
+  (:require [clojure.data.json :as json]
+            [clojure.java.io :as io]
+            [compojure.handler :as handler]
+            [compojure.route :as route]
+            [environ.core :refer [env]]
+            [ring.adapter.jetty :as jetty]
+            (ring.middleware [multipart-params :as mp])
+            (ring.middleware [params :as rmp])
+            (ring.middleware [keyword-params :as krmp])
+            [ring.middleware.cors :refer [wrap-cors]]
+            [ring.middleware.json :as middleware]))
 
-; (def  ^:dynamic *result_work* (ref '()))
 
-; (defn ignore-node? [node]
-;   "takes a node and test if the node is to be executed"
-;   (or (true? (:disabled? node)) (= :dropzone (:type node)) (empty? node)))
+(defn run-mold [ mold ]
+    (println "Running mold " mold)
+    (let [result (processing/process-mold mold)]
+      (if
+        (= 0 (count (:errors result))) ; if no errors
+        (response result) ; return result
+        { :status 500 :body result } ; else return error
+        )))
 
-                                        ;Public
+; TODO Error handling: filename is invalid (or non-existing).
+; TODO Error handling: if cannot save file
+(defn save-mold [ filename mold ]
+  ; (println "filename: " filename)
+  ; (println "MOLD: " mold)
+  (spit filename (with-out-str (pr mold)))
+  { :status 201 })
 
-; (comment defn got-key
-;          "Returns wither m(ap) got k(ey)"
-;          [k m] (not (nil? (k m))))
+; TODO Error handling: if filename is non-existing or invalid
+; TODO Error handling: if file not found
+; TODO Error handling: if file is invalid clojure
+(defn load-mold [ filename ]
+  (response (read-string (slurp filename))))
 
+(defroutes app-routes
+  (POST "/run" {body :body} (run-mold body))
+  (POST "/save-mold" {body :body params :params} (save-mold (:filename params) body))
+  (GET "/load-mold" { params :params } (load-mold (:filename params)))
+  (GET "/node-metadata" [] (response all-node-metadata))
+  (route/not-found "Not Found"))
 
+(def handler
+(wrap-cors app-routes :access-control-allow-origin #"(.)*"
+                      :access-control-allow-methods [:get :put :post :delete] ;TODO
+                      :access-control-allow-headers ["Content-Type"]))
 
-; (defmethod node :csv-out [node]
-;   (let [options (:options node) filename (:filename options) ch (:separator options) header (:header options)]
-;     (output-csv filename ch header @*result_work*)))
+(defn start-server [& port]
+(let [port 8109]
+  (jetty/run-jetty (->
+                    (handler/api handler)
+                    (krmp/wrap-keyword-params)
+                    (mp/wrap-multipart-params)
+                    (middleware/wrap-json-body {:keywords? true})
+                    (middleware/wrap-json-response))
+    {:port port })))
 
-; (defmethod node :drop-columns [node]
-;   (let [options (:options node) k (:keys options) ]
-;     (drop-columns k @*result_work*  )))
+; Required for tests to be able to reference 'app'
+(def app (rmp/wrap-params (krmp/wrap-keyword-params (middleware/wrap-json-body app-routes {:keywords? true}))))
 
-; (defmethod node :print-node [x]  (str x))
-
-; (defmethod node :dropzone [_] nil)
-
-; (defmethod node :default [node] {:error "Not implemented" :node (str node) } )
-
-; (defmethod node :no-match [_]  {:error "Not implemented (is :type defined?)"} )
-
-; (defn clean-pipe [pipe]
-;   "cleans the pipe, for unused nodes (:dropzones) and :disabled? nodes returns only nodes to be evaluated"
-;   (filter #(not (ignore-node? %)) pipe))
-
-;                                         ;test
-;                                         ;run
-
-; (defn run!
-;   "This is the main intake point,
-;    It will evaluate each node in the pipe and returns the final dataset"
-;   [pipe]
-;   (let [cpipe (clean-pipe pipe) result (ref '())]
-;     ;(print pipe)
-;     (dosync
-;      (doall (map #(ref-set *result_work* (node %))  cpipe))
-;      ;(ref-work (first cpipe))
-;      ;(ref-work (second cpipe))
-;      ;(ref-set *result_work* (node (first cpipe)))
-;      ;(ref-set *result_work* (node (second cpipe)))
-;      (ref-set result @*result_work*))
-;     @result))
-
-; (def test-pipe '({:type :csv-in,
-;                   :category :input,
-;                   :id :csv-in5293,
-;                   :options {:header true :separator \, :filename "test/data/P2P_2010_Contributions_short.csv"}}
-
-;                  {:type :dropzone, :id :dropzone5296}
-
-;                  {:type :drop-columns,
-;                   :category :transformation,
-;                   :options {:keys [ :Filing_Year :Contributor_Name  :Filing_Date :Contributor_Zip :Filing_Yea :Contributor_Phone :Contribution_Date :Business_State :Business_Zip  :Business_Name :Business_City :Contributor_City :Aggregate_Contribution_Amount :Contribution_Amount  :Business_Address1 :Business_Address2 :Business_Phone :Contributor_Address2 :Contributor_Address1  :Recipient_Name  :Amendment :Contributor_State  ]}
-;                   :id :drop-columns5295}
-
-;                  {:type :dropzone, :id :dropzone5299}
-
-;                  {:type :csv-out,
-;                   :category :outp
-;                   :id :csv-out5298,
-;                   :options {:header true, :separator \;, :filename  "test/data/P2P_2010_Contributions_short-new.csv" }}))
+(defn -main [& [port]]
+    (start-server))

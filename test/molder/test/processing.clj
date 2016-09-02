@@ -4,20 +4,36 @@
         [molder.node-defs])
   (:require
     [clojure.java.io :as io]
-    [molder.test.data.molds :as test-molds]))
+    [molder.test.data.molds :as test-molds]
+    [molder.test.data.simpletables :as test-tables]
+    [molder.nodes.drop-columns :as drop-columns]))
+
+(def tinytable1-namedropped (drop-columns/drop-columns-impl [ "Name" ] test-tables/tinytable1))
 
 (deftest external-output-node?-tests
   (is (= false (external-output-node? (:csv-input5293 test-molds/test-nodes1)))
       "Check if input node evaluates to external output node")
-  (is (= false (external-output-node? (:identity9101 test-molds/test-nodes1)))
+  (is (= false (external-output-node? (:drop-columns123 test-molds/test-nodes1)))
       "Check if standard node evaluates to external output node")
   (is (= true (external-output-node? (:csv-output1892 test-molds/test-nodes1)))
       "Check if input node evaluates to external output node"))
 
+(deftest is-missing-output-node?-tests
+  (is (= false (is-missing-output-node? (:csv-input5293 test-molds/test-nodes1)))
+      "Check if input node evaluates to false if it does have an output")
+  (is (= false (is-missing-output-node? (:drop-columns123 test-molds/test-nodes1)))
+      "Check if standard node evaluates to false if it does have an output")
+  (is (= false (is-missing-output-node? (:csv-output1892 test-molds/test-nodes1)))
+      "Check if external output node is interpreted correctly")
+  (is (= true (is-missing-output-node? (:csv-input5293 test-molds/test-nodes3)))
+      "Check if external input node evaluates to true if missing output")
+  (is (= true (is-missing-output-node? (:drop-columns123 test-molds/test-nodes4)))
+      "Check if transformation node evaluates to true if missing output"))
+
 (deftest external-input-node?-tests
   (is (= true (external-input-node? (:csv-input5293 test-molds/test-nodes1)))
       "Check if input node evaluates to external input node")
-  (is (= false (external-input-node? (:identity9101 test-molds/test-nodes1)))
+  (is (= false (external-input-node? (:drop-columns123 test-molds/test-nodes1)))
       "Check if standard node evaluates to external input node")
   (is (= false (external-input-node? (:csv-output1892 test-molds/test-nodes1)))
       "Check if input node evaluates to external input node"))
@@ -30,65 +46,49 @@
          (filter-external-output-nodes test-molds/test-nodes2))
       "List with two outputs"))
 
+(deftest filter-nodes-to-try-tests
+  (is (= (list
+            (:drop-columns123 test-molds/test-nodes4)
+            (:csv-output1 test-molds/test-nodes4))
+         (filter-nodes-to-try test-molds/test-nodes4))
+      "Filter with one external output and one incomplete"))
+
 (deftest get-node-from-id-test
   (is (= (:csv-output1892 test-molds/test-nodes1)
          (get-node-from-id "csv-output1892" test-molds/test-nodes1))))
 
 (deftest get-input-nodes-test
-  (is (= (list (:identity9101 test-molds/test-nodes1))
+  (is (= (list (:drop-columns123 test-molds/test-nodes1))
          (get-input-nodes (:csv-output1892 test-molds/test-nodes1) test-molds/test-nodes1))))
-
-(def test-input-csv-expected1
-    '({:Name "Kasper" :Age "31" :Country "Switzerland"}
-      {:Name "Kevin" :Age "31" :Country "Denmark"}
-      {:Name "Santa Clause" :Age "800" :Country "North Pole"}))
-
-(def test-input-csv-expected2
-    '({:header1 "Kasper" :header2 "31" :header3 "Switzerland"}
-      {:header1 "Kevin" :header2 "31" :header3 "Denmark"}
-      {:header1 "Santa Clause" :header2 "800" :header3 "North Pole"},
-      {:header1 "Mike Smith", :header2 "", :header3 ""}))
 
 (def state (atom { :data {} :errors {} :warnings {}}))
 (deftest process-from-node-tests
   (let [output (process-from-node (:csv-input5293 test-molds/test-nodes1) test-molds/test-nodes1 state)]
-    (is (= test-input-csv-expected1 output)
+    (is (= test-tables/tinytable1 output)
         "Process a single input node"))
-  (let [output (process-from-node (:identity9101 test-molds/test-nodes1) test-molds/test-nodes1 state)]
-    (is (= test-input-csv-expected1 output)
+  (let [output (process-from-node (:drop-columns123 test-molds/test-nodes1) test-molds/test-nodes1 state)]
+    (is (= tinytable1-namedropped output)
         "Process two nodes"))
   (let [output (process-from-node (:csv-output1892 test-molds/test-nodes1) test-molds/test-nodes1 state)]
     (is (= nil output)
         "Process three nodes, ending in output. Shouldn't return anything")
     ; check that the file is written as expected
-    (is (= (slurp  "test/molder/test/data/smallset.csv") (slurp  "test/molder/test/data/smallset-out.csv"))
+    (is (= (slurp  "test/molder/test/data/smallset-namedropped.csv") (slurp  "test/molder/test/data/smallset-out.csv"))
         "Check that the last output node is properly run"))
     (io/delete-file (io/file "test/molder/test/data/smallset-out.csv")))
-
-(def table1
-  '({:Name "Kasper", :Age "31", :Country "Switzerland"}
-    {:Name "Kevin", :Age "31", :Country "Denmark"}
-    {:Name "Santa Clause", :Age "800", :Country "North Pole"}))
-
-(def table2
-  '({:Region "East", :UnitCost "1.99"}
-    {:Region "North-Central", :UnitCost "19.99"}
-    {:Region "Mid-Central", :UnitCost "4.99"}
-    {:Region "Central", :UnitCost "19.99"}
-    {:Region "West", :UnitCost "2.99"}))
 
 (def expected-state
   { :data
     { :csv-input1
-        { :csv-output1 table2 }
+        { :csv-output1 test-tables/tinytable2 }
       :identity222
-        { :csv-output1892 table1 }
-      :identity9101
-        { :identity222 table1 }
+        { :csv-output1892 tinytable1-namedropped }
+      :drop-columns123
+        { :identity222 tinytable1-namedropped }
       :csv-input5293
-        { :identity9101 table1 }}
-    :errors {},
-    :warnings {}})
+        { :drop-columns123 test-tables/tinytable1 }}
+    :errors [],
+    :warnings []})
 
 (deftest process-mold-tests
   ; This mold has two outputs - both to .csv files
@@ -98,7 +98,7 @@
         "Check that the state (ie. data flowing between nodes) has been saved"))
 
   ; check that the files are written as expected
-  (is (= (slurp  "test/molder/test/data/smallset.csv") (slurp  "test/molder/test/data/smallset-out.csv"))
+  (is (= (slurp  "test/molder/test/data/smallset-namedropped.csv") (slurp  "test/molder/test/data/smallset-out.csv"))
       "Check that first csv output triggered properly")
   (io/delete-file (io/file "test/molder/test/data/smallset-out.csv"))
 

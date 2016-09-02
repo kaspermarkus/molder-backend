@@ -1,0 +1,31 @@
+{ "csv-input5293": {
+    "type": "csv-input",
+    "id": "csv-input5293",
+    "name": "Adresses CSV",
+    "inputs": null,
+    "outputs": [ "identity9101" ],
+    "fields":
+      { "filename": "test/molder/test/data/smallset.csv",
+        "header": true,
+        "separator": ";"
+    }},
+
+  "identity9101": {
+    "type": "identity",
+    "id": "identity9101",
+    "name": "No mods",
+    "inputs": [ "csv-input5293" ],
+    "outputs": [ "csv-output1892" ],
+    "fields": {}},
+
+  "csv-output1892": {
+    "type": "csv-output",
+    "id": "csv-output1892",
+    "name": "Modified addresses",
+    "inputs": [ "identity9101" ],
+    "outputs": null,
+    "fields": {
+        "filename": "test/molder/test/data/smallset-out.csv",
+        "header": true,
+        "separator": ";"
+    }}}

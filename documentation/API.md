@@ -22,14 +22,16 @@
           :separator
             { :type "char"
               :required true
-              :default ';'
+              :default ","
               :name "Separator",
               :tooltip "The character separating the entries in the CSV file" }}}}
 
-### NODE: ###
+### ACTUAL NODE: ###
 {
     :type "csv-in",
-    :id "csv-in14"
+    :id "csv-in14",
+    :inputs nil
+    :outputs [ "drop-columns123" ]
     :fields 
       { :filename "/tmp/deleme.csv"
         :header true
@@ -37,36 +39,63 @@
     :name "Adresses CSV"
 }
 
-#### EDGES: ####
-{ :csv-in14 [ :mynode1 :mynode2 :mynodeN ]
-  :other_node18 [ :somenode1 :somenode2 ]}
+### TABLE DATA ###
+{
+  :columns {
+    :myheader1
+      { :type "char" ;not required
+        :index 0 }
+    :myheader2 
+      { :index 1 }
+  }
+  :data [( \k "Kasper Markus" )
+         ( \l "Lasse Markus") ] }
 
-### PIPES: ###
-( {node1 (input+)} {node2}(1*input 1*output) ... {node_n-1}(1*input 1*output) {node_n (output+)} )
+
+### MOLD (i.e. map of nodes): ###
+{ :csv-input5293 {
+    :type "csv-input",
+    :id "csv-input5293"
+    :name "Adresses CSV"
+    :inputs nil
+    :outputs [ "drop-columns123" ]
+    :fields
+      { :filename "test/molder/test/data/smallset.csv"
+        :header true
+        :separator ";"
+    }}
+    (....)
+  :csv-output1892 {
+    :type "csv-output"
+    :id "csv-output1892"
+    :name "Modified addresses"
+    :inputs [ "identity222" ]
+    :outputs nil
+    :fields {
+        :filename "test/molder/test/data/smallset-out.csv"
+        :header true
+        :separator ";"
+    }}
 
 ### API: ###
 
 ##### Load project:
-URL: /load filename.clj
-Returns: { nodes: <nodes>, edges: <edges> }
+URL: GET /load-mold?filename=<filename>
+Returns: A mold (see above)
 
 ##### Save project:
-URL: /save <project.clj> <nodes> <edges>
-Returns: Status code and the same output as /try
+URL: POST /save-mold?filename=<filename>
+body: A mold (see above)
+Returns: Status code
 
 ##### Load full application information:
-URL: /node_metadata
-Returns: a map of 'nodetypes', keyed by their ids
+URL: /node-metadata
+Returns: a map of node-metadata, keyed by node-type
 
 ##### Run the mold/pipe for realz
-URL: /run <nodes> <edges>
+URL: /run <mold>
 
 Does a full run of the pipes
-
-Returns: Status code, result
-
-##### Try running the mold, report status
-URL: /try <nodes> <edges>
 
 Tries running the pipe and returns a information about the data that is run through the mold.
 
@@ -87,4 +116,4 @@ Returns:
       :description "..."
       :details "..."
     }],
-    :warnings {}
+    :warnings [{}]

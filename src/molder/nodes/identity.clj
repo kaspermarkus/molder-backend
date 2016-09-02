@@ -9,6 +9,6 @@
   { :in-points 1
     :out-points 1
     :type-name "Identity"
-    :type :identity
+    :type "identity"
     :description "Identity transform. I.e. outputs the input table"
     :fields {}})

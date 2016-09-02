@@ -2,8 +2,6 @@
   (:use [clojure.test]
         [molder.node-defs]
         [slingshot.slingshot :only [throw+ try+]]))
-  ; (:require
-  ;   [clojure.java.io :as io]))
 
 ; test :default multi-method
 (def bogus-node { :type "bogus",
