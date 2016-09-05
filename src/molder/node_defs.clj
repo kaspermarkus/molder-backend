@@ -3,7 +3,8 @@
     [molder.nodes.input.csv-input :as csv-input]
     [molder.nodes.output.csv-output :as csv-output]
     [molder.nodes.identity :as ident-node]
-    [molder.nodes.drop-columns :as drop-columns])
+    [molder.nodes.drop-columns :as drop-columns]
+    [molder.error-handling :as errors])
   (:use [slingshot.slingshot :only [throw+ try+]]))
 
 (defn node-type
@@ -57,6 +58,11 @@
                     "a node of type \"" (:type node) "\" was provided. "
                     "The node in question has the ID: \"" (:id node) \"", and the full node content is: "
                     node)}))
+
+(defmethod validate-node :default [node _ state]
+  (errors/add-warning state { :type :core-warning
+                       :description (str "Node of type " (:id node) " does not have validation function")
+                       :node (:id node) }))
 
 (def all-node-metadata
   (zipmap
