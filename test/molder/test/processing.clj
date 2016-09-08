@@ -73,9 +73,9 @@
     (is (= nil output)
         "Process three nodes, ending in output. Shouldn't return anything")
     ; check that the file is written as expected
-    (is (= (slurp  "test/molder/test/data/smallset-namedropped.csv") (slurp  "test/molder/test/data/smallset-out.csv"))
+    (is (= (slurp  "test/molder/test/data/csv/smallset-namedropped.csv") (slurp  "test/molder/test/data/csv/smallset-out.csv"))
         "Check that the last output node is properly run"))
-    (io/delete-file (io/file "test/molder/test/data/smallset-out.csv")))
+    (io/delete-file (io/file "test/molder/test/data/csv/smallset-out.csv")))
 
 (def expected-state
   { :data
@@ -98,10 +98,10 @@
         "Check that the state (ie. data flowing between nodes) has been saved"))
 
   ; check that the files are written as expected
-  (is (= (slurp  "test/molder/test/data/smallset-namedropped.csv") (slurp  "test/molder/test/data/smallset-out.csv"))
+  (is (= (slurp  "test/molder/test/data/csv/smallset-namedropped.csv") (slurp  "test/molder/test/data/csv/smallset-out.csv"))
       "Check that first csv output triggered properly")
-  (io/delete-file (io/file "test/molder/test/data/smallset-out.csv"))
+  (io/delete-file (io/file "test/molder/test/data/csv/smallset-out.csv"))
 
-  (is (= (slurp  "test/molder/test/data/smallset2.csv") (slurp  "test/molder/test/data/smallset2-out.csv"))
+  (is (= (slurp  "test/molder/test/data/csv/smallset2.csv") (slurp  "test/molder/test/data/csv/smallset2-out.csv"))
       "Check that second csv output triggered properly")
-  (io/delete-file (io/file "test/molder/test/data/smallset2-out.csv")))
+  (io/delete-file (io/file "test/molder/test/data/csv/smallset2-out.csv")))

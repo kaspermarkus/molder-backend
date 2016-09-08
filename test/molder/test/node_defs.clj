@@ -10,7 +10,7 @@
                   :inputs nil
                   :outputs [ :identity9101 ]
                   :fields
-                    { :filename "test/molder/test/data/smallset.csv"
+                    { :filename "test/molder/test/data/csv/smallset.csv"
                       :header true
                       :separator \;
                   }})

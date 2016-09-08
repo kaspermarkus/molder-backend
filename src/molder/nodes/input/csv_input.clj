@@ -1,7 +1,6 @@
 ; TODO error handling in case the CSV file is malformatted (ie. too few or too many separators on each line)
 ; TODO error handling in case of empty file
 ; TODO error handling in case of missing file
-; TODO validation function for invalid separator and filename parameters
 (ns molder.nodes.input.csv-input)
 (require '[clojure.data.csv :as csv]
          '[clojure.java.io :as io]
@@ -32,13 +31,20 @@
         (let [orig (csv-input-impl filename separator header)]
           { :columns (:columns orig) :data (take numlines (:data orig)) })))
 
+; TODO tests
+(defn parse-separator [separator]
+  (if (char? separator)
+    separator
+    (if (= separator "\\t")
+      \tab
+      (first separator))))
+
 (defn csv-input [node]
   (let [fields (:fields node)
         filename (:filename fields)
         separator (:separator fields)
         header (:header fields)
-        ; TODO proper test, warnings, etc for separator and header being correct types
-        separator-char (if (char? separator) separator (first separator))] ; ensure it's a char
+        separator-char (parse-separator separator)]
     (csv-input-impl filename separator-char header)))
 
 (defn validate [ node state ]
@@ -46,21 +52,17 @@
          filename (:filename fields)
          separator (:separator fields)]
     ; check separator
-    (if (< 1 (count separator))
-      (errors/add-error state { :type :parameter-error
-                            :field :separator
-                            :description (str "CSV Input node retrieved the separator: '" separator "'' which is more than one character long")
-                            :node (:id node) }))
-    (if (= 0 (count separator))
-      (errors/add-error state { :type :parameter-error
-                            :field :separator
-                            :description "CSV Input node retrieved an empty separator"
-                            :node (:id node) }))
+    (if (not (char? separator))
+      (do
+        (if (and (< 1 (count separator)) (not (= separator "\\t")))
+          (errors/add-parameter-error state node :separator
+            "CSV Input node retrieved the separator: '" separator "' which is more than one character long"))
+        (if (= 0 (count separator))
+          (errors/add-parameter-error state node :separator "CSV Input node retrieved an empty separator"))))
+    ; check that file exists
     (if (not (.exists (io/file filename)))
-      (errors/add-error state { :type :parameter-error
-                            :field :filename
-                            :description (str "CSV Input node retrieved an invalid filename (" filename ") - it does not exist")
-                            :node (:id node) }))))
+      (errors/add-parameter-error state node :filename
+            "CSV Input node retrieved an invalid filename (" filename ") - it does not exist"))))
 
 (def metadata
   { :in-points 0

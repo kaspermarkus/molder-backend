@@ -5,7 +5,7 @@
     :inputs nil
     :outputs [ "drop-columns123" ]
     :fields
-      { :filename "test/molder/test/data/smallset.csv"
+      { :filename "test/molder/test/data/csv/smallset.csv"
         :header true
         :separator ";"
     }}
@@ -32,7 +32,7 @@
     :inputs [ "identity222" ]
     :outputs nil
     :fields {
-        :filename "test/molder/test/data/smallset-out.csv"
+        :filename "test/molder/test/data/csv/smallset-out.csv"
         :header true
         :separator ";"
     }}
@@ -45,7 +45,7 @@
     :inputs nil
     :outputs [ "csv-output1" ]
     :fields
-      { :filename "test/molder/test/data/smallset2.csv"
+      { :filename "test/molder/test/data/csv/smallset2.csv"
         :header true
         :separator ";"
       }}
@@ -56,7 +56,7 @@
     :inputs [ "csv-input1" ]
     :outputs nil
     :fields {
-        :filename "test/molder/test/data/smallset2-out.csv"
+        :filename "test/molder/test/data/csv/smallset2-out.csv"
         :header true
         :separator ";"
         }}}
