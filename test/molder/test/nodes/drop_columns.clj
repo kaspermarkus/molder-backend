@@ -5,7 +5,8 @@
         [slingshot.slingshot :only [throw+ try+]])
   (:require [molder.nodes.drop-columns :as drop-columns]
     [molder.error-handling :as error-handling]
-    [molder.test.data.simpletables :as test-tables]))
+    [molder.test.data.simpletables :as test-tables]
+    [molder.test-utils :as test-utils]))
 
 (def expected-table1
   { :columns
@@ -73,35 +74,37 @@
 
 ; Test validation function:
 (deftest test-validate
-  (let [thrown (atom false)]
-    (try+
-      (drop-columns/validate nodedef4 test-tables/tinytable1)
-      (catch [:severity :warning] { :keys [ type description ]}
-        (is (= :parameter-error type))
-        (is (= description "Drop Column(s) node retrieved an empty list of column names to drop")
-            "We're getting the correct error message")
-        (swap! thrown not)))
-    (is (= true @thrown) "An error message should be thrown"))
-
-  (let [thrown (atom false)]
-    (try+
-      (drop-columns/validate nodedef2 test-tables/tinytable1)
-      (catch [:severity :warning] { :keys [ type description ]}
-        (is (= :parameter-error type))
-        (is (= description "Drop Column(s) found a column name to drop that wasn't present in the input table")
-            "We're getting the correct error message")
-        (swap! thrown not)))
-    (is (= true @thrown) "An error message should be thrown")))
-
-; test multimethod
-(deftest test-validate-multimethod
-  (let [thrown (atom false)]
-    (try+
-      (validate-node nodedef4 test-tables/tinytable1)
-      (catch [:severity :warning] { :keys [ type description ]}
-        (is (= :parameter-error type))
-        (swap! thrown not)))
-    (is (= true @thrown) "An error message should be thrown")))
+  (let [state (atom test-utils/state-template)]
+    ; (println "INPUT: " test-tables/tinytable1)
+    ; no errors/warnings
+    (validate-node nodedef1 (list test-tables/tinytable1) state)
+    (is (= @state test-utils/state-template) "Validation with no errors nor warnings")
+    ; no input
+    (validate-node nodedef1 nil state)
+    (is (= (:errors @state)
+           [{ :type :input-error
+              :description "drop-columns24 did not retrieve any input data"
+              :node "drop-columns24"}])
+          "Error on no input")
+    ; ; empty list of column names
+    (test-utils/clear-state state)
+    (validate-node nodedef4 (list test-tables/tinytable1) state)
+    (is (= @state (assoc-in test-utils/state-template [ :warnings 0 ]
+                      { :type :parameter-error
+                        :field :column-names
+                        :node "drop-columns24"
+                        :description "Drop Column(s) node retrieved an empty list of column names to drop"}))
+          "Error on empty list of column names")
+    ; ; test for non-existing column names to drop
+    (test-utils/clear-state state)
+    (validate-node nodedef2 (list test-tables/tinytable1) state)
+    (is (= (:warnings @state)
+           [{ :type :parameter-error
+              :field :column-names
+              :column-name :Bogus
+              :node "drop-columns24"
+              :description "Drop Column(s) found a column name to drop that wasn't present in the input table"}])
+          "Error on empty list of column names")))
 
 ; Check metadata multimethod is properly overwritten
 (deftest test-metadata-multimethod

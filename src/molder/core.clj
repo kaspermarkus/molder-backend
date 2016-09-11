@@ -17,6 +17,11 @@
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.json :as middleware]))
 
+(defn parse-int-param [ val default]
+  (if
+    (and (string? val) (re-find #"^\d+$" val))
+    (Integer/parseInt val)
+    default))
 
 (defn run-mold [ mold ]
     (println "Running mold " mold)
@@ -26,6 +31,11 @@
         (response result) ; return result
         { :status 500 :body result } ; else return error
         )))
+
+(defn initiate-try-mold [mold params]
+  (let [limit (parse-int-param (:limit params) 20)]
+    (println "Trying mold: " mold)
+    (response (processing/try-mold mold limit))))
 
 ; TODO Error handling: filename is invalid (or non-existing).
 ; TODO Error handling: if cannot save file
@@ -43,6 +53,7 @@
 
 (defroutes app-routes
   (POST "/run" {body :body} (run-mold body))
+  (POST "/try" {body :body params :params} (initiate-try-mold body params))
   (POST "/save-mold" {body :body params :params} (save-mold (:filename params) body))
   (GET "/load-mold" { params :params } (load-mold (:filename params)))
   (GET "/node-metadata" [] (response all-node-metadata))

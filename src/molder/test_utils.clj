@@ -29,3 +29,7 @@
     (println "DIFF - first only: " (first diff))
     (println "DIFF - second only: " (second diff))))
     ; (println "DIFF:\nFirst: " (first diff) "\nSecond: " (second diff) "\nLast " (nth diff 3))))
+
+(def state-template { :data {} :errors [] :warnings [] })
+
+(defn clear-state [state] (swap! state (fn [_] state-template)))

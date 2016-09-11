@@ -5,6 +5,8 @@
 
 (defn run-node [node table] table)
 
+(defn validate [node table state] nil)
+
 (def metadata
   { :in-points 1
     :out-points 1

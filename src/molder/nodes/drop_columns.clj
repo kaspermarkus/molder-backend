@@ -4,14 +4,15 @@
     [molder.utils :as utils]))
 
 (defn validate [node table state ]
-  (println "VALIDATING DROP COLUMNS for node " node)
+  ; (println "VALIDATING DROP COLUMNS for node " node)
   (let [ column-names (get-in node [ :fields :column-names ]) ]
-    (println "Checking table " table); check for empty list
-    (if (= table nil)
-      (errors/add-error state { :type :input-error
-                       :description "Drop Column(s) did not retrieve any input data"
-                       :node (:id node) }))
-    (println "checking column names " column-names)
+    ; (println "Checking table " table); check for empty list
+        (errors/validate-input-table node table state)
+; (if (= table nil)
+;       (errors/add-error state { :type :input-error
+;                        :description "Drop Column(s) did not retrieve any input data"
+                       ; :node (:id node) }))
+    ; (println "checking column names " column-names)
     (if (= 0 (count column-names))
       (errors/add-warning state { :type :parameter-error
                        :field :column-names
@@ -19,7 +20,7 @@
                        :node (:id node) }))
     ; Check for columns to drop that arent in the table
     (let [ks (:columns table)]
-      (println "KS: " ks " from TABLE: " table)
+      ; (println "KS: " ks " from TABLE: " table)
       (doall
         (map (fn [column-name]
                 (do
@@ -28,8 +29,7 @@
                          :field :column-names
                          :column-name column-name
                          :description "Drop Column(s) found a column name to drop that wasn't present in the input table"
-                         :node (:id node) }))
-                  (println "Checked whether " ks " contained " column-name)))
+                         :node (:id node) }))))
               column-names)))))
 
 (defn drop-index [ v cindex ] ; TODO test for this

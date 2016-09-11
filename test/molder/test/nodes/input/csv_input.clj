@@ -4,7 +4,8 @@
         [molder.node-defs])
   (:require
         [molder.nodes.input.csv-input :as csv-input]
-        [molder.test.data.simpletables :as test-tables]))
+        [molder.test.data.simpletables :as test-tables]
+        [molder.test-utils :as test-utils]))
 
 (def test-input-csv-expected2
     { :columns
@@ -72,25 +73,21 @@
     (is (= (run-node nodedef3) test-tables/tinytable1)
         "separator is a tab (\\t) string")))
 
-(def state-template { :data {} :errors [] :warnings [] })
-
-(defn clear-state [state] (swap! state (fn [_] { :data {} :errors [] :warnings [] })))
-
 ; Test validation function:
 (deftest test-validate
-  (let [state (atom state-template)]
+  (let [state (atom test-utils/state-template)]
     ; no errors/warnings
     (validate-node nodedef1 nil state)
-    (is (= @state state-template) "Validation with no errors nor warnings")
+    (is (= @state test-utils/state-template) "Validation with no errors nor warnings")
     ; no errors from string separator that is only one char long
     (validate-node (assoc-in nodedef1 [ :fields :separator ] ";") nil state)
-    (is (= @state state-template) "no errors from string separator that is only one char long")
+    (is (= @state test-utils/state-template) "no errors from string separator that is only one char long")
     ; no errors from string separator with tab
     (validate-node nodedef3 nil state)
-    (is (= @state state-template) "no errors from string separator with tab")
+    (is (= @state test-utils/state-template) "no errors from string separator with tab")
     ; error if empty string is passed as separator))
     (validate-node (assoc-in nodedef1 [ :fields :separator ] "") nil state)
-    (is (= @state (assoc-in state-template [ :errors 0 ]
+    (is (= @state (assoc-in test-utils/state-template [ :errors 0 ]
                     { :type :parameter-error
                       :field :separator
                       :node "csv-in14"
@@ -98,9 +95,9 @@
                     }))
         "Error if empty string is passed as separator")
     ; error if separator is a string longer than 1 char
-    (clear-state state)
+    (test-utils/clear-state state)
     (validate-node (assoc-in nodedef1 [ :fields :separator ] "ai") nil state)
-    (is (= @state (assoc-in state-template [ :errors 0 ]
+    (is (= @state (assoc-in test-utils/state-template [ :errors 0 ]
                     { :type :parameter-error
                       :field :separator
                       :node "csv-in14"
@@ -108,9 +105,9 @@
                     }))
         "non-convertable string is passed as separator")
     ; error if filename is not pointing to a file
-    (clear-state state)
+    (test-utils/clear-state state)
     (validate-node (assoc-in nodedef1 [ :fields :filename ] "/bogus/file.csv") nil state)
-    (is (= @state (assoc-in state-template [ :errors 0 ]
+    (is (= @state (assoc-in test-utils/state-template [ :errors 0 ]
                     { :type :parameter-error
                       :field :filename
                       :node "csv-in14"

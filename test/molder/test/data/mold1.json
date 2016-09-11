@@ -5,7 +5,7 @@
     "inputs": null,
     "outputs": [ "identity9101" ],
     "fields":
-      { "filename": "test/molder/test/data/data/smallset.csv",
+      { "filename": "test/molder/test/data/csv/smallset.csv",
         "header": true,
         "separator": ";"
     }},
@@ -25,7 +25,7 @@
     "inputs": [ "identity9101" ],
     "outputs": null,
     "fields": {
-        "filename": "test/molder/test/data/data/smallset-out.csv",
+        "filename": "test/molder/test/data/csv/smallset-out.csv",
         "header": true,
         "separator": ";"
     }}}

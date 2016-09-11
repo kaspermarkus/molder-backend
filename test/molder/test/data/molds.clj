@@ -1,7 +1,44 @@
 (ns molder.test.data.molds)
 
 ; Mold consisting of a single pipe from csv-input via drop-column to csv-output node
-(def test-nodes1
+(def test-mold-single-node
+ {:node0 {
+    :type "csv-input",
+    :id "node0"
+    :name "Adresses CSV"
+    :inputs nil
+    :outputs [ ]
+    :fields
+      { :filename "test/molder/test/data/csv/smallset.csv"
+        :header true
+        :separator \;
+    }}})
+
+; Mold consisting of a single pipe from csv-input via drop-column to csv-output node
+(def test-mold-two-nodes-no-ext-output
+ {:csv-input5293 {
+    :type "csv-input",
+    :id "csv-input5293"
+    :name "Adresses CSV"
+    :inputs nil
+    :outputs [ :drop-columns123 ]
+    :fields
+      { :filename "test/molder/test/data/csv/smallset.csv"
+        :header true
+        :separator \;
+    }}
+
+  :drop-columns123 {
+    :type "drop-columns"
+    :id "drop-columns123"
+    :name "No name"
+    :inputs [ :csv-input5293 ]
+    :outputs []
+    :fields {
+      :column-names [ :Name ] }}})
+
+; Mold consisting of a single pipe from csv-input via drop-column to csv-output node
+(def test-mold-three-nodes
  {:csv-input5293 {
     :type "csv-input",
     :id "csv-input5293"
@@ -38,7 +75,7 @@
 ; Mold consisting of a two pipes.
 ; 1) csv-input via identity to identity to csv-output node
 ; 2) csv-input to csv-output node
-(def test-nodes2
+(def test-mold-multiple-pipes
  {:csv-input5293 {
     :type "csv-input",
     :id "csv-input5293"

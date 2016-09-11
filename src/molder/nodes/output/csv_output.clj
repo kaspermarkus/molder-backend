@@ -30,6 +30,23 @@
     ; (println "ORIG TABLES: " tables)))
     (csv-output-impl filename separator-char header table)))
 
+(defn validate [ node table state ] nil)
+  ; (let [ fields (:fields node)
+  ;        filename (:filename fields)
+  ;        separator (:separator fields)]
+  ;   ; check separator
+  ;   (if (not (char? separator))
+  ;     (do
+  ;       (if (and (< 1 (count separator)) (not (= separator "\\t")))
+  ;         (errors/add-parameter-error state node :separator
+  ;           "CSV Input node retrieved the separator: '" separator "' which is more than one character long"))
+  ;       (if (= 0 (count separator))
+  ;         (errors/add-parameter-error state node :separator "CSV Input node retrieved an empty separator"))))
+  ;   ; check that file exists
+  ;   (if (not (.exists (io/file filename)))
+  ;     (errors/add-parameter-error state node :filename
+  ;           "CSV Input node retrieved an invalid filename (" filename ") - it does not exist"))))
+
 (def metadata
   { :in-points 1
     :out-points 0

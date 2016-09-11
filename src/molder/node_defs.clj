@@ -24,9 +24,11 @@
 
 (defmethod run-node :csv-output [node table] (csv-output/csv-output node (first table)))
 (defmethod node-metadata :csv-output [_] csv-output/metadata)
+(defmethod validate-node :csv-output [node table state] (csv-output/validate node (first table) state))
 
 (defmethod run-node :identity [node table] (ident-node/run-node node (first table)))
 (defmethod node-metadata :identity [_] ident-node/metadata)
+(defmethod validate-node :identity [node table state ] ident-node/validate node (first table) state)
 
 (defmethod run-node :drop-columns [node table] (drop-columns/run-node node (first table)))
 (defmethod node-metadata :drop-columns [_] drop-columns/metadata)
@@ -61,7 +63,7 @@
 
 (defmethod validate-node :default [node _ state]
   (errors/add-warning state { :type :core-warning
-                       :description (str "Node of type " (:id node) " does not have validation function")
+                       :description (str "Node of type " (:type node) " does not have validation function")
                        :node (:id node) }))
 
 (def all-node-metadata
